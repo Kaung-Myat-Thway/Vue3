@@ -1,26 +1,118 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="container">
+    <Header @toggle-add-task="toggleAddTask" title="Task Tracker" :showToggle="showToggle" />
+    <div v-show="showToggle">
+      <AddTask @add-task="addTask" />
+    </div>
+
+    <Tasks
+      @delete-task="deleteTask"
+      @toggle-reminder="toggleReminder"
+      :tasks="tasks"
+    />
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import Header from "./components/Header.vue";
+import Tasks from "./components/Tasks.vue";
+import AddTask from "./components/AddTask.vue";
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    HelloWorld
-  }
-}
+    Header,
+    Tasks,
+    AddTask,
+  },
+  data() {
+    return {
+      tasks: [],
+      showToggle:false
+    };
+  },
+  methods: {
+    toggleAddTask() {
+      this.showToggle = !this.showToggle
+    },
+    addTask(task) {
+      this.tasks = [...this.tasks, task]; //destruction original array with ... and add new value
+    },
+    deleteTask(id) {
+      if (confirm("Are You Sure")) {
+        this.tasks = this.tasks.filter((task) => task.id !== id); //filter and  delete action
+      }
+    },
+    toggleReminder(id) {
+      this.tasks = this.tasks.map(
+        (task) => (task.id == id ? { ...task, reminder: !task.reminder } : task) //toggle reminder true/false conditions
+      );
+    },
+  },
+  created() {
+    this.tasks = [
+      {
+        id: 1,
+        text: "Do Something",
+        day: "March 21 st",
+        reminder: true,
+      },
+      {
+        id: 2,
+        text: "Eat Something",
+        day: "March 21 st",
+        reminder: true,
+      },
+      {
+        id: 3,
+        text: "Go Somewhere",
+        day: "March 21 st",
+        reminder: false,
+      },
+    ];
+  },
+};
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap");
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: "Poppins", sans-serif;
+}
+.container {
+  max-width: 500px;
+  margin: 30px auto;
+  overflow: auto;
+  min-height: 300px;
+  border: 1px solid steelblue;
+  padding: 30px;
+  border-radius: 5px;
+}
+.btn {
+  display: inline-block;
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 15px;
+  font-family: inherit;
+}
+.btn:focus {
+  outline: none;
+}
+.btn:active {
+  transform: scale(0.98);
+}
+.btn-block {
+  display: block;
+  width: 100%;
 }
 </style>
