@@ -1,6 +1,10 @@
 <template>
   <div class="container">
-    <Header @toggle-add-task="toggleAddTask" title="Task Tracker" :showToggle="showToggle" />
+    <Header
+      @toggle-add-task="toggleAddTask"
+      title="Task Tracker"
+      :showToggle="showToggle"
+    />
     <div v-show="showToggle">
       <AddTask @add-task="addTask" />
     </div>
@@ -17,6 +21,7 @@
 import Header from "./components/Header.vue";
 import Tasks from "./components/Tasks.vue";
 import AddTask from "./components/AddTask.vue";
+
 export default {
   name: "App",
   components: {
@@ -27,19 +32,32 @@ export default {
   data() {
     return {
       tasks: [],
-      showToggle:false
+      showToggle: false,
     };
   },
   methods: {
     toggleAddTask() {
-      this.showToggle = !this.showToggle
+      this.showToggle = !this.showToggle;
     },
-    addTask(task) {
-      this.tasks = [...this.tasks, task]; //destruction original array with ... and add new value
+    async addTask(task) {
+      const res = await fetch("http://localhost:5000/tasks", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(task),
+      });
+      const data = await res.json();
+      this.tasks = [...this.tasks, data]; //destruction original array with ... and add new value
     },
-    deleteTask(id) {
+    async deleteTask(id) {
       if (confirm("Are You Sure")) {
-        this.tasks = this.tasks.filter((task) => task.id !== id); //filter and  delete action
+        const res = await fetch(`http://localhost:5000/tasks/${id}`, {
+          method: "DELETE",
+        });
+        res.status === 200
+          ? (this.tasks = this.tasks.filter((task) => task.id !== id))
+          : alert("Error deleteing task"); //filter and  delete action
       }
     },
     toggleReminder(id) {
@@ -47,28 +65,14 @@ export default {
         (task) => (task.id == id ? { ...task, reminder: !task.reminder } : task) //toggle reminder true/false conditions
       );
     },
+    async fetchTasks() {
+      const res = await fetch("http://localhost:5000/tasks");
+      const data = await res.json();
+      return data;
+    },
   },
-  created() {
-    this.tasks = [
-      {
-        id: 1,
-        text: "Do Something",
-        day: "March 21 st",
-        reminder: true,
-      },
-      {
-        id: 2,
-        text: "Eat Something",
-        day: "March 21 st",
-        reminder: true,
-      },
-      {
-        id: 3,
-        text: "Go Somewhere",
-        day: "March 21 st",
-        reminder: false,
-      },
-    ];
+  async created() {
+    this.tasks = await this.fetchTasks();
   },
 };
 </script>
@@ -82,15 +86,18 @@ export default {
 }
 body {
   font-family: "Poppins", sans-serif;
+  background: #ff6600;
 }
 .container {
-  max-width: 500px;
+  max-width: 1200px;
   margin: 30px auto;
   overflow: auto;
   min-height: 300px;
   border: 1px solid steelblue;
   padding: 30px;
   border-radius: 5px;
+  background: #fff;
+  box-shadow: 12px 8px #000;
 }
 .btn {
   display: inline-block;
